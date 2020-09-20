@@ -9,6 +9,7 @@
 #include <WiFi.h>
 #include <AzureIotHub.h>
 #include <Esp32MQTTClient.h>
+#include <ArduinoJson.h>
 
 #include "OTA.hpp"
 #include "Blink.hpp"
@@ -17,21 +18,30 @@
 class IoTDevice
 {
 public:
+  void connect()
+  {
+    const char *ssid = config.get("core", "ssid", 128);
+    const char *password = config.get("core", "password", 128);
 
-  void connect() {
-    const char* ssid = config.get("core", "ssid", 128);
-    const char* password = config.get("core", "password", 128);
-    
     this->connectWifi(ssid, password);
 
-    const char* connectionString = config.get("core", "connectionString", 256);
+    const char *connectionString = config.get("core", "connectionString", 256);
 
     this->connectHub(connectionString);
   }
 
-  bool send(char *message)
+  bool send(DynamicJsonDocument message)
   {
-    if (Esp32MQTTClient_SendEvent(message))
+    String output;
+
+    serializeJson(message, output);
+
+    Serial.println("Sending message:");
+    Serial.println(output);
+
+    boolean send = Esp32MQTTClient_SendEvent(output.c_str());
+
+    if (send)
     {
       this->led.blink();
       return true;
@@ -50,6 +60,7 @@ private:
   OTA DeviceOTA;
   Blink_LED led;
   DeviceConfiguration config;
+  StaticJsonDocument<256> twin;
 
   void connectHub(const char *connectionString)
   {

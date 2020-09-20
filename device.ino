@@ -3,6 +3,7 @@
  */
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include "inc/DeviceConfiguration.hpp"
 #include "inc/IoTDevice.hpp"
@@ -21,12 +22,14 @@ void setup()
 }
 
 void loop()
-{
-  char buff[128];
+{  
+  DynamicJsonDocument doc(1024);
 
-  // replace the following line with your data sent to Azure IoTHub
-  snprintf(buff, 128, "{\"topic\":\"iot\"}");
-  iot.send(buff);
+  doc["sensor"] = "gps";
+  doc["data"][0] = 48.756080;
+  doc["data"][1] = 2.302038;
 
-  delay(100);
+  iot.send(doc);
+
+  delay(1000);
 }
