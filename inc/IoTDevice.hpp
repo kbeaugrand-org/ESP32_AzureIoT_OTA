@@ -15,14 +15,12 @@
 #include "Blink.hpp"
 #include "DeviceConfiguration.hpp"
 #include "Constants.hpp"
-#include "IoTDeviceState.hpp"
 
 class IoTDevice
 {
 public:
 
   IoTDevice(){
-    IoTDeviceState::reset();
   }
 
   void connect()
@@ -178,13 +176,15 @@ private:
   {
     doc.remove("$version");
 
-    fs::File file = SPIFFS.open((configurationFilePath + String("/") + twinFilePath).c_str(), "w");
-    serializeJson(doc, file);
-    file.close();
+    Serial.println("Updating DesiredProperties");
+    serializeJson(doc, Serial);
 
-    StaticJsonDocument<10> state = IoTDeviceState::getState();
-    state["desiredStateDate"] = millis();
-    IoTDeviceState::setState(state);
+    DynamicJsonDocument stateDoc(1024);
+    stateDoc["state"] = doc;
+
+    fs::File file = SPIFFS.open((configurationFilePath + String("/") + twinFilePath).c_str(), "w");
+    serializeJson(stateDoc, file);
+    file.close();
   }
 
   static StaticJsonDocument<defaultTwinSize> getDesiredProperties()
@@ -194,28 +194,27 @@ private:
     StaticJsonDocument<defaultTwinSize> doc;
     DeserializationError err = deserializeJson(doc, file);
 
-    StaticJsonDocument<10> state = IoTDeviceState::getState();
-
     if (err.code() != err.Ok)
     {
-      Serial.print("Unable to get parse saved twin:");
+      Serial.print("Unable to parse saved twin:");
       Serial.println(err.c_str());
     } 
-    else if(state["reportedStateDate"] <= state["desiredStateDate"])
+    else if(!doc.containsKey("reported") || !doc["reported"].as<boolean>())
     {
       String output;
-      serializeJson(doc, output);
+      serializeJson(doc["state"], output);
       const char* reportedState = output.c_str();
 
-      Esp32MQTTClient_ReportState(reportedState);
-      state["reportedStateDate"] = millis();
+      file.close();
 
-      IoTDeviceState::setState(state);
+      doc["reported"] = Esp32MQTTClient_ReportState(reportedState);
+
+      fs::File writeFile = SPIFFS.open((configurationFilePath + String("/") + twinFilePath).c_str(), "w");
+      serializeJson(doc, writeFile);
+      writeFile.close();
     }
 
-    file.close();
-
-    return doc;
+    return doc["state"];
   }
 };
 
