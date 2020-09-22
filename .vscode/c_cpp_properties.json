@@ -11,7 +11,7 @@
                 "C:\\Users\\beaugrandk\\Documents\\Arduino\\libraries\\**",
                 "C:\\Users\\beaugrandk\\Documents\\ArduinoData\\packages\\esp32\\hardware\\esp32\\1.0.4\\**",
                 "C:\\Users\\beaugrandk\\Documents\\ArduinoData\\packages\\esp32\\tools\\**",
-                "C:\\Users\\beaugrandk\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.4\\**",
+                "C:\\Users\\beaugrandk\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.4\\**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "clang-x64",

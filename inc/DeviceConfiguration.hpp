@@ -8,10 +8,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>   
+#include <SPIFFS.h>
 #include <SPIFFSIniFile.h>
+#include <ArduinoJson.h>
 
-const char *configurationFileName = "config.ini";
-const char *configurationFilePath = "/device";
+#include "Constants.hpp"
 
 class DeviceConfiguration
 {
@@ -32,14 +33,14 @@ public:
     {
         char* buffer = (char*) malloc(max_size + 1);
 
-        const char* filename = (configurationFilePath + String("/") + configurationFileName).c_str();
+        const char* filename = (configurationFilePath + String("/") + this->configurationFileName).c_str();
 
         SPIFFSIniFile file(filename);
 
         if (!file.open())
         {
             Serial.print("Ini file ");
-            Serial.print(configurationFileName);
+            Serial.print(this->configurationFileName);
             Serial.println(" does not exist");
 
             return "";
@@ -54,7 +55,12 @@ public:
         return buffer;
     }
 
+    const char* getStoragePath() {
+        return configurationFilePath;
+    }
+
 private:
+    const char *configurationFileName = "config.ini";
 };
 
 #endif

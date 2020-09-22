@@ -19,11 +19,15 @@ void setup()
   DeviceConfiguration::init();
 
   iot.connect();
+
+  randomSeed(analogRead(0));
 }
 
 void loop()
 {  
   DynamicJsonDocument doc(1024);
+
+  doc["random"] = random(300);
 
   doc["sensor"] = "gps";
   doc["data"][0] = 48.756080;
@@ -31,5 +35,5 @@ void loop()
 
   iot.send(doc);
 
-  delay(1000);
+  delay(iot.getProperties()["telemetry"]["frequency"].as<int>());
 }

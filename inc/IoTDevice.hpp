@@ -14,10 +14,17 @@
 #include "OTA.hpp"
 #include "Blink.hpp"
 #include "DeviceConfiguration.hpp"
+#include "Constants.hpp"
+#include "IoTDeviceState.hpp"
 
 class IoTDevice
 {
 public:
+
+  IoTDevice(){
+    IoTDeviceState::reset();
+  }
+
   void connect()
   {
     const char *ssid = config.get("core", "ssid", 128);
@@ -55,12 +62,17 @@ public:
     return this->connectionStatus;
   }
 
+  StaticJsonDocument<defaultTwinSize> getProperties()
+  {
+    return getDesiredProperties();
+  }
+
 private:
+
   bool connectionStatus;
   OTA DeviceOTA;
   Blink_LED led;
   DeviceConfiguration config;
-  StaticJsonDocument<256> twin;
 
   void connectHub(const char *connectionString)
   {
@@ -117,8 +129,21 @@ private:
     memcpy(temp, payLoad, size);
     temp[size] = '\0';
 
-    // Display Twin message.
+    Serial.print("Recieving digital twin update: ");
     Serial.println(temp);
+
+    StaticJsonDocument<defaultTwinSize> doc;
+    deserializeJson(doc, temp);
+
+    if (doc.containsKey("desired") && doc.containsKey("reported"))
+    {
+      JsonObject desiredProperties = doc["desired"].as<JsonObject>();
+      writeDesiredProperties(desiredProperties);
+    }
+    else{
+      writeDesiredProperties(doc.as<JsonObject>());
+    }
+
     free(temp);
   }
 
@@ -147,6 +172,50 @@ private:
     *response = (unsigned char *)strdup(responseMessage);
 
     return result;
+  }
+
+  static void writeDesiredProperties(JsonObject doc)
+  {
+    doc.remove("$version");
+
+    fs::File file = SPIFFS.open((configurationFilePath + String("/") + twinFilePath).c_str(), "w");
+    serializeJson(doc, file);
+    file.close();
+
+    StaticJsonDocument<10> state = IoTDeviceState::getState();
+    state["desiredStateDate"] = millis();
+    IoTDeviceState::setState(state);
+  }
+
+  static StaticJsonDocument<defaultTwinSize> getDesiredProperties()
+  {
+    fs::File file = SPIFFS.open((configurationFilePath + String("/") + twinFilePath).c_str(), "r");
+
+    StaticJsonDocument<defaultTwinSize> doc;
+    DeserializationError err = deserializeJson(doc, file);
+
+    StaticJsonDocument<10> state = IoTDeviceState::getState();
+
+    if (err.code() != err.Ok)
+    {
+      Serial.print("Unable to get parse saved twin:");
+      Serial.println(err.c_str());
+    } 
+    else if(state["reportedStateDate"] <= state["desiredStateDate"])
+    {
+      String output;
+      serializeJson(doc, output);
+      const char* reportedState = output.c_str();
+
+      Esp32MQTTClient_ReportState(reportedState);
+      state["reportedStateDate"] = millis();
+
+      IoTDeviceState::setState(state);
+    }
+
+    file.close();
+
+    return doc;
   }
 };
 
