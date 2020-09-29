@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include <apps/sntp/sntp.h>
+
 /*
   IoTDevice.h - Library for manipulating IoT Device for Azure IoT Hub.
 */
@@ -8,7 +10,6 @@
 
 #include <WiFi.h>
 #include <AzureIotHub.h>
-#include <Esp32MQTTClient.h>
 #include <ArduinoJson.h>
 
 #include "OTA.hpp"
@@ -21,6 +22,7 @@ class IoTDevice
 public:
 
   IoTDevice(){
+    IoTDevice::connectionStatus = false;
   }
 
   void connect()
@@ -29,6 +31,8 @@ public:
     const char *password = config.get("core", "password", 128);
 
     this->connectWifi(ssid, password);
+
+    this->initDeviceTime();
 
     const char *connectionString = config.get("core", "connectionString", 256);
 
@@ -65,26 +69,57 @@ public:
     return getDesiredProperties();
   }
 
-private:
+  // void setDefaultProperties(StaticJsonDocument<defaultTwinSize> defaults){
+  //   this->writeDesiredProperties(defaults);
+  // }
 
+private:
+  Blink_LED led;
   bool connectionStatus;
   OTA DeviceOTA;
-  Blink_LED led;
   DeviceConfiguration config;
+
+  void initDeviceTime()
+  {       
+    LogInfo("Initializing Device Time");
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "192.168.10.1");
+    sntp_init();
+    time_t ts = 0;
+
+    // Before 1980 is uninitialized
+    while (ts < 10 * 365 * 24 * 3600)
+    {
+      this->led.blink();
+      this->led.blink();
+      
+      ThreadAPI_Sleep(1000);
+      ts = get_time(NULL);
+    }
+    LogInfo("SNTP initialization complete");
+    return;
+  }
 
   void connectHub(const char *connectionString)
   {
-    this->connectionStatus = Esp32MQTTClient_Init((const uint8_t *)connectionString, true);
+    LogInfo("Connecting the client");
+    IOTHUB_CLIENT_HANDLE iotHubClientHandle;
+    iotHubClientHandle = IoTHubClient_CreateFromConnectionString(connectionString, AMQP_Protocol);
 
-    Esp32MQTTClient_SetSendConfirmationCallback(SendConfirmationCallback);
-    Esp32MQTTClient_SetMessageCallback(MessageCallback);
-    Esp32MQTTClient_SetDeviceTwinCallback(DeviceTwinCallback);
-    Esp32MQTTClient_SetDeviceMethodCallback(DeviceMethodCallback);
+    Esp32MQTTClient_Init((const uint8_t *)connectionString, true);
+  
+    Esp32MQTTClient_SetConnectionStatusCallback(connnectionStatusCallback);
+
+    Esp32MQTTClient_SetSendConfirmationCallback(sendConfirmationCallback);
+    Esp32MQTTClient_SetMessageCallback(messageCallback);
+    Esp32MQTTClient_SetDeviceTwinCallback(deviceTwinCallback);
+    Esp32MQTTClient_SetDeviceMethodCallback(deviceMethodCallback);
   }
 
   void connectWifi(const char *ssid, const char *password)
   {
-    Serial.println("Starting connecting WiFi.");
+    Serial.print("Starting connecting WiFi: ");
+    Serial.println(ssid);
     this->led.high();
 
     WiFi.begin(ssid, password);
@@ -102,20 +137,29 @@ private:
     this->led.low();
   }
 
-  static void SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result)
+  static void connnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason){
+    if (result == IOTHUB_CLIENT_CONNECTION_AUTHENTICATED){
+
+    }
+    else{
+      LogError("Device is not connected");
+    }
+  }
+
+  static void sendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result)
   {
     if (result == IOTHUB_CLIENT_CONFIRMATION_OK)
     {
     }
   }
 
-  static void MessageCallback(const char *payLoad, int size)
+  static void messageCallback(const char *payLoad, int size)
   {
     Serial.println("Message callback:");
     Serial.println(payLoad);
   }
 
-  static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payLoad, int size)
+  static void deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payLoad, int size)
   {
     char *temp = (char *)malloc(size + 1);
 
@@ -145,7 +189,7 @@ private:
     free(temp);
   }
 
-  static int DeviceMethodCallback(const char *methodName, const unsigned char *payload, int size, unsigned char **response, int *response_size)
+  static int deviceMethodCallback(const char *methodName, const unsigned char *payload, int size, unsigned char **response, int *response_size)
   {
     LogInfo("Try to invoke method %s", methodName);
     const char *responseMessage = "\"Successfully invoke device method\"";

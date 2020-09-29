@@ -10,6 +10,7 @@
 #include "inc/Blink.hpp"
 
 IoTDevice iot;
+Blink_LED led;
 
 void setup()
 {
@@ -25,6 +26,11 @@ void setup()
 
 void loop()
 {  
+  if(!iot.isConnected()){
+    led.blink();
+    return;
+  }
+
   DynamicJsonDocument doc(1024);
 
   doc["random"] = random(300);
@@ -35,5 +41,8 @@ void loop()
 
   iot.send(doc);
 
+  serializeJson(iot.getProperties(), Serial);
   delay(iot.getProperties()["telemetry"]["frequency"].as<int>());
+
+  delay(2000);
 }
