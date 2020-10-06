@@ -1,33 +1,26 @@
 /**
  * A simple Azure IoT example for sending telemetry.
  */
-
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include "inc/DeviceConfiguration.hpp"
-#include "inc/IoTDevice.hpp"
-#include "inc/Blink.hpp"
+#define IOTDEVICE_PROTOCOL_MQTT
 
-IoTDevice iot;
-Blink_LED led;
+#include "inc/IoTDevice.h"
 
 void setup()
 {
   pinMode(BLINK_LED_PIN, OUTPUT);
   Serial.begin(115200);
 
-  DeviceConfiguration::init();
-
-  iot.connect();
-
+  IoTDevice_ConnectFromConfiguration();
   randomSeed(analogRead(0));
 }
 
 void loop()
 {  
-  if(!iot.isConnected()){
-    led.blink();
+  if(!IoTDevice_IsConnected()){
+    BlinkLed_Blink();
     return;
   }
 
@@ -38,11 +31,12 @@ void loop()
   doc["sensor"] = "gps";
   doc["data"][0] = 48.756080;
   doc["data"][1] = 2.302038;
+  
+  IoTDevice_Send(doc);
 
-  iot.send(doc);
+  StaticJsonDocument<TWIN_SIZE> desiredProperties = IoTDevice_GetDesiredProperties();
 
-  serializeJson(iot.getProperties(), Serial);
-  delay(iot.getProperties()["telemetry"]["frequency"].as<int>());
+  delay(desiredProperties["telemetry"]["frequency"].as<int>());
 
   delay(2000);
 }

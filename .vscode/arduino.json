@@ -1,8 +1,8 @@
 {
     "board": "esp32:esp32:esp32",
     "sketch": "device.ino",
-    "configuration": "PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none",
     "output": "./.build",
     "programmer": "AVR ISP",
-    "port": "COM3"
+    "port": "COM3",
+    "configuration": "PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=verbose"
 }
