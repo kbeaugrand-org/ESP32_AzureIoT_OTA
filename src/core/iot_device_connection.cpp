@@ -133,7 +133,7 @@ void IoTDevice_ConfigureOptions()
   (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(iotHubClientHandle, IoTDevice_ConnectionStatusCallback, NULL);
 }
 
-void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
+static void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
 {
     clientConnected = false;
 

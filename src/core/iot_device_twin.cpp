@@ -36,6 +36,6 @@ StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties()
   return doc["state"];
 }
 
-void IoTDevice_SendReportedPropertiesCallback(int status_code, void* userContextCallback){
+static void IoTDevice_SendReportedPropertiesCallback(int status_code, void* userContextCallback){
 
 }

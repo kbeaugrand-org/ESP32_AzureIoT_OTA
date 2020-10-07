@@ -5,6 +5,8 @@
 #include <Update.h>
 
 WiFiClient client;
+int contentLength;
+bool isValidContentType;
 
 void OTA_Start(String host, int port, String bin)
 {
@@ -135,11 +137,8 @@ void OTA_Start(String host, int port, String bin)
     }
 }
 
-
-int contentLength;
-bool isValidContentType;
 // Utility to extract header value from headers
-String getHeaderValue(String header, String headerName)
+static String getHeaderValue(String header, String headerName)
 {
     return header.substring(strlen(headerName.c_str()));
 }

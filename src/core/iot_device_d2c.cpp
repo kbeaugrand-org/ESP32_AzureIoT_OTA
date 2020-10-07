@@ -22,7 +22,7 @@ bool IoTDevice_Send(DynamicJsonDocument message)
   IoTHubMessage_Destroy(messageHandle);
 }
 
-void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
+static void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
 {
   if (result == IOTHUB_CLIENT_CONFIRMATION_OK)
   {
