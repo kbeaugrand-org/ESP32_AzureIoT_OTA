@@ -6,7 +6,7 @@
 
 #define IOTDEVICE_PROTOCOL_MQTT
 
-#include <ESP32AzureIoTOTA.h>
+#include <ESP32_AzureIoT_OTA.h>
 
 void setup()
 {

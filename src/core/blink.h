@@ -1,8 +1,8 @@
 /*
   Blink.h - Library for Blink the integrated LED on cards.
 */
-#ifndef Blink_h
-#define Blink_h
+#ifndef __ESP32_AzureIoT_OTA_BLINK_H__
+#define __ESP32_AzureIoT_OTA_BLINK_H__
 
 #define BLINK_LED_PIN 2
 

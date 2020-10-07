@@ -3,8 +3,8 @@
 /*
   DeviceConfiguration.h - Library for manipulating Device Configuration.
 */
-#ifndef DeviceConfiguration_h
-#define DeviceConfiguration_h
+#ifndef __ESP32_AzureIoT_OTA_DEVICECONFIGURATION_H__
+#define __ESP32_AzureIoT_OTA_DEVICECONFIGURATION_H__
 
 void DeviceConfiguration_Init();
 

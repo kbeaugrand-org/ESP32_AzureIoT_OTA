@@ -1,5 +1,5 @@
-#ifndef Constants_h
-#define Constants_h
+#ifndef __ESP32_AzureIoT_OTA_CONSTANTS_H__
+#define __ESP32_AzureIoT_OTA_CONSTANTS_H__
 
 #ifndef CONFIGURATION_FILE_PATH
 #define CONFIGURATION_FILE_PATH "/device"

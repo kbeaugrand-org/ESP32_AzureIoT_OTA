@@ -1,5 +1,5 @@
-#ifndef IOT_DEVICE_CONNECTION_H
-#define IOT_DEVICE_CONNECTION_H
+#ifndef __ESP32_AzureIoT_OTA_DEVICECONNECTION_H__
+#define __ESP32_AzureIoT_OTA_DEVICECONNECTION_H__
 
 bool IoTDevice_IsConnected();
 

@@ -1,6 +1,6 @@
 {
     "board": "esp32:esp32:esp32",
-    "sketch": "device.ino",
+    "sketch": "sample/device.ino",
     "output": "./.build",
     "programmer": "AVR ISP",
     "port": "COM3",

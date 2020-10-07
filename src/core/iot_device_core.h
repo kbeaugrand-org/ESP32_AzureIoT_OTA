@@ -1,5 +1,5 @@
-#ifndef IOT_DEVICE_CORE_H
-#define IOT_DEVICE_CORE_H
+#ifndef __ESP32_AzureIoT_OTA_DEVICECORE_H__
+#define __ESP32_AzureIoT_OTA_DEVICECORE_H__
 
 #include <AzureIoTHub.h>
 

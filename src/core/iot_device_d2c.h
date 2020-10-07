@@ -1,5 +1,5 @@
-#ifndef IOT_DEVICE_D2C_H
-#define IOT_DEVICE_D2C_H
+#ifndef __ESP32_AzureIoT_OTA_DEVICED2C_H__
+#define __ESP32_AzureIoT_OTA_DEVICED2C_H__
 
 #include <ArduinoJson.h>
 

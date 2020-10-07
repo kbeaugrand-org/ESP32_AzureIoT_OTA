@@ -1,5 +1,5 @@
-#ifndef IOT_DEVICE_TWIN_H
-#define IOT_DEVICE_TWIN_H
+#ifndef __ESP32_AzureIoT_OTA_DEVICETWIN_H__
+#define __ESP32_AzureIoT_OTA_DEVICETWIN_H__
 
 #include <ArduinoJson.h>
 

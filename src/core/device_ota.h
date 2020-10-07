@@ -1,8 +1,8 @@
 /*
   Device_OTA.h - Library for flashing device OTA (Over The Air).
 */
-#ifndef Device_OTA_h
-#define Device_OTA_h
+#ifndef __ESP32_AzureIoT_OTA_DEVICEOTA_H__
+#define __ESP32_AzureIoT_OTA_DEVICEOTA_H__
 
 #include <Arduino.h>
 
