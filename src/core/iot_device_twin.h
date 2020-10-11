@@ -5,6 +5,15 @@
 
 #include "constants.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties();
+
+#ifdef __cplusplus
+}   // extern "C"
+#endif /* __cplusplus */
 
 #endif

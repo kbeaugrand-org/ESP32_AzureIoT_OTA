@@ -6,10 +6,19 @@
 
 #define BLINK_LED_PIN 2
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void BlinkLed_Blink();
 
 void BlinkLed_High();
 
 void BlinkLed_Low();
+
+#ifdef __cplusplus
+}   // extern "C"
+#endif /* __cplusplus */
 
 #endif

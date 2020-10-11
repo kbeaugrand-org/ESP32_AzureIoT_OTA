@@ -1,12 +1,17 @@
 #include <ArduinoJson.h>
 #include <fs.h>
 #include <SPIFFS.h>
-#include <azure_c_shared_utility/xlogging.h>
+#include "logging.h"
 
 #include <AzureIoTHub.h>
 
 #include "constants.h"
 #include "iot_device_core.h"
+#include "iot_device_twin.h"
+
+void IoTDevice_SendReportedPropertiesCallback(int status_code, void* userContextCallback){
+
+}
 
 StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties()
 {
@@ -16,7 +21,7 @@ StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties()
 
   if (err.code() != err.Ok)
   {
-    LogInfo("Unable to parse saved twin: %s", err.c_str());
+    Log_Info("Unable to parse saved twin: %s", err.c_str());
   } 
   else if(!doc.containsKey("reported") || !doc["reported"].as<boolean>())
   {
@@ -25,7 +30,7 @@ StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties()
     const char* reportedState = output.c_str();
     file.close();
 
-    IoTHubClient_LL_SendReportedState(iotHubClientHandle, (const unsigned char*)reportedState, output.length(), IoTDevice_SendReportedPropertiesCallback, NULL);
+    IoTHubClient_LL_SendReportedState(__hub_client_handle__, (const unsigned char*)reportedState, output.length(), IoTDevice_SendReportedPropertiesCallback, NULL);
 
     doc["reported"] = true;
     fs::File writeFile = SPIFFS.open((CONFIGURATION_FILE_PATH + String("/") + TWIN_FILE_PATH).c_str(), "w");
@@ -34,8 +39,4 @@ StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties()
   }
 
   return doc["state"];
-}
-
-static void IoTDevice_SendReportedPropertiesCallback(int status_code, void* userContextCallback){
-
 }

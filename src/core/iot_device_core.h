@@ -3,6 +3,15 @@
 
 #include <AzureIoTHub.h>
 
-IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle;
+// #ifdef __cplusplus
+// extern "C"
+// {
+// #endif
+
+static  IOTHUB_CLIENT_LL_HANDLE __hub_client_handle__;
+
+// #ifdef __cplusplus
+// }   // extern "C"
+// #endif /* __cplusplus */
 
 #endif

@@ -4,6 +4,11 @@
 #ifndef __ESP32_AzureIoT_OTA_H__
 #define __ESP32_AzureIoT_OTA_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "core/constants.h"
 #include "core/blink.h"
 #include "core/device_configuration.h"
@@ -11,5 +16,9 @@
 #include "core/iot_device_connection.h"
 #include "core/iot_device_d2c.h"
 #include "core/iot_device_twin.h"
+
+#ifdef __cplusplus
+}   // extern "C"
+#endif /* __cplusplus */
 
 #endif

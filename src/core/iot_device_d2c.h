@@ -3,6 +3,15 @@
 
 #include <ArduinoJson.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 bool IoTDevice_Send(DynamicJsonDocument message);
+
+#ifdef __cplusplus
+}   // extern "C"
+#endif /* __cplusplus */
 
 #endif

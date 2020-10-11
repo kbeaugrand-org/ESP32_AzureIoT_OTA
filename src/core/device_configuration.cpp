@@ -1,4 +1,3 @@
-
 /*
   DeviceConfiguration.h - Library for manipulating Device Configuration.
 */
@@ -6,9 +5,10 @@
 #include <stdlib.h>   
 #include <SPIFFS.h>
 #include <SPIFFSIniFile.h>
-#include <azure_c_shared_utility/xlogging.h>
 
+#include "logging.h"
 #include "constants.h"
+#include "device_configuration.h"
 
 #ifndef CONFIGURATION_FILENAME
 #define CONFIGURATION_FILENAME "config.ini"
@@ -18,12 +18,12 @@ void DeviceConfiguration_Init() {
     
     if (!SPIFFS.begin(false, CONFIGURATION_FILE_PATH))
     {
-        LogError("Mount Failed");
+        Log_Error("Mount Failed");
         return;
     }
 
-    LogInfo("Used %s over %s bytes.", SPIFFS.usedBytes(), SPIFFS.totalBytes());
-    LogInfo("File system mounted");
+    Log_Info("Used %s over %s bytes.", SPIFFS.usedBytes(), SPIFFS.totalBytes());
+    Log_Info("File system mounted");
 }
 
 const char*  DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size)
@@ -34,13 +34,13 @@ const char*  DeviceConfiguration_Get(const char *section, const char *key, const
 
     if (!file.open())
     {
-        LogError("Ini file %s does not exist.", CONFIGURATION_FILENAME);
+        Log_Error("Ini file %s does not exist.", CONFIGURATION_FILENAME);
         return "";
     }
 
     if (!file.getValue(section, key, buffer, max_size))
     {
-        LogError("Section '%s' does not have an entry '%s'!", section, key);
+        Log_Error("Section '%s' does not have an entry '%s'!", section, key);
         return "";
     }
 

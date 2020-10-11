@@ -1,12 +1,13 @@
 #include <WiFi.h>
 
 #include <AzureIoTHub.h>
-#include <azure_c_shared_utility/xlogging.h>
 #include <apps/sntp/sntp.h>
 
 #include "blink.h"
+#include "logging.h"
 #include "device_configuration.h"
 #include "iot_device_core.h"
+#include "iot_device_connection.h"
 
 #ifndef IOTDEVICE_PROTOCOL_MQTT
 #define IOTDEVICE_PROTOCOL_MQTT
@@ -21,12 +22,60 @@
 #define IOTDEVICE_AUTO_URL_ENCODE_DECODE true
 #endif 
 
+#ifdef IOTDEVICE_PROTOCOL_MQTT
+#include <AzureIoTProtocol_MQTT.h>
+#include <iothubtransportmqtt.h>
+IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol = MQTT_Protocol;
+#endif // IOTDEVICE_PROTOCOL_MQTT
+
+#ifdef IOTDEVICE_PROTOCOL_HTTP
+#include <AzureIoTProtocol_HTTP.h>
+#include <iothubtransporthttp.h>
+IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol = HTTP_Protocol;
+#endif // IOTDEVICE_PROTOCOL_HTTP
+
 int receiveContext;
 bool clientConnected = false;
 
-void IoTDevice_ConnectWifi(const char *ssid, const char *password)
+void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
 {
-  LogInfo("Starting connecting WiFi: %s", ssid);
+    clientConnected = false;
+
+    switch (reason)
+    {
+    case IOTHUB_CLIENT_CONNECTION_EXPIRED_SAS_TOKEN:
+        if (result == IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED)
+        {
+            Log_Info(">>> Connection status: timeout");
+        }
+        break;
+    case IOTHUB_CLIENT_CONNECTION_DEVICE_DISABLED:
+        break;
+    case IOTHUB_CLIENT_CONNECTION_BAD_CREDENTIAL:
+        break;
+    case IOTHUB_CLIENT_CONNECTION_RETRY_EXPIRED:
+        break;
+    case IOTHUB_CLIENT_CONNECTION_NO_NETWORK:
+        if (result == IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED)
+        {
+            Log_Info(">>> Connection status: disconnected");
+        }
+        break;
+    case IOTHUB_CLIENT_CONNECTION_COMMUNICATION_ERROR:
+        break;
+    case IOTHUB_CLIENT_CONNECTION_OK:
+        if (result == IOTHUB_CLIENT_CONNECTION_AUTHENTICATED)
+        {
+            clientConnected = true;
+            Log_Info(">>> Connection status: connected");
+        }
+        break;
+    }
+}
+
+static void IoTDevice_ConnectWifi(const char *ssid, const char *password)
+{
+  Log_Info("Starting connecting WiFi: %s", ssid);
   BlinkLed_High();
 
   WiFi.begin(ssid, password);
@@ -34,17 +83,17 @@ void IoTDevice_ConnectWifi(const char *ssid, const char *password)
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    LogInfo(".");
+    Log_Info(".");
   }
 
-  LogInfo("WiFi connected, IP address: %s", WiFi.localIP());
+  Log_Info("WiFi connected, IP address: %s", WiFi.localIP());
 
   BlinkLed_Low();
 }
 
-void IoTDevice_InitDeviceTime()
+static void IoTDevice_InitDeviceTime()
 {       
-  LogInfo("Initializing Device Time.");
+  Log_Info("Initializing Device Time.");
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
   sntp_setservername(0, "192.168.10.1");
   sntp_init();
@@ -60,34 +109,56 @@ void IoTDevice_InitDeviceTime()
     ts = time(NULL);
   }
 
-  LogInfo("SNTP initialization complete.");
+  Log_Info("SNTP initialization complete.");
   return;
 }
 
-void IoTDevice_ConnectToHub(const char *connectionString)
+static void IoTDevice_ConnectToHub(const char *connectionString)
 {
 #ifdef IOTDEVICE_PROTOCOL_MQTT
-#include <iothubtransportmqtt.h>
-IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol = MQTT_Protocol;
+  Log_Info("Loading the MQTT_Protocol Transport provider");
 #endif // IOTDEVICE_PROTOCOL_MQTT
 
 #ifdef IOTDEVICE_PROTOCOL_HTTP
-#include <iothubtransporthttp.h>
-IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol = HTTP_Protocol;
+  Log_Info("Loading the HTTP_Protocol Transport provider");
 #endif // IOTDEVICE_PROTOCOL_HTTP
 
-  LogInfo("Connecting the client");
-  iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(connectionString, protocol);
+  Log_Info("Connecting the client");
+  __hub_client_handle__ = IoTHubClient_LL_CreateFromConnectionString(connectionString, protocol);
 
   // Used to initialize IoTHub SDK subsystem
   (void)IoTHub_Init();
 
-  if (iotHubClientHandle  == NULL)
+  if (__hub_client_handle__  == NULL)
   {
-      LogError("Error AZ002: Failure createing Iothub device. Hint: Check you connection string.");
+      Log_Error("Error AZ002: Failure creating Iothub device. Hint: Check you connection string.");
   }
 
-  LogInfo("Connecting to the device...");
+  Log_Info("Connecting to the device...");
+}
+
+/* -- ConfigureOptions --
+ * Configures the LL Device client options.
+ */
+static void IoTDevice_ConfigureOptions()
+{
+    // Set any option that are neccessary.
+    // For available options please see the iothub_sdk_options.md documentation
+#ifdef IOTDEVICE_DIAGNOSTIC_SAMPLING_PERCENTAGE
+    int diagnosticSamplingPercentage = IOTDEVICE_DIAGNOSTIC_SAMPLING_PERCENTAGE;
+    IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_DIAGNOSTIC_SAMPLING_PERCENTAGE, &diagnosticSamplingPercentage);
+#endif
+
+#ifdef IOTDEVICE_TRUSTED_CERT
+    IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_TRUSTED_CERT, IOTDEVICE_TRUSTED_CERT);
+#endif
+
+#ifdef IOTDEVICE_AUTO_URL_ENCODE_DECODE
+    bool autoUrlEncodeDecode = IOTDEVICE_AUTO_URL_ENCODE_DECODE;
+    IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_AUTO_URL_ENCODE_DECODE, &autoUrlEncodeDecode);
+#endif
+  
+  (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(__hub_client_handle__, IoTDevice_ConnectionStatusCallback, NULL);
 }
 
 bool IoTDevice_IsConnected(){
@@ -107,64 +178,4 @@ bool IoTDevice_ConnectFromConfiguration() {
     const char *connectionString = DeviceConfiguration_Get("core", "connectionString", 256);
 
     IoTDevice_ConnectToHub(connectionString);
-}
-
-/* -- ConfigureOptions --
- * Configures the LL Device client options.
- */
-void IoTDevice_ConfigureOptions()
-{
-    // Set any option that are neccessary.
-    // For available options please see the iothub_sdk_options.md documentation
-#ifdef IOTDEVICE_DIAGNOSTIC_SAMPLING_PERCENTAGE
-    int diagnosticSamplingPercentage = IOTDEVICE_DIAGNOSTIC_SAMPLING_PERCENTAGE;
-    IoTHubDeviceClient_LL_SetOption(iotHubClientHandle, OPTION_DIAGNOSTIC_SAMPLING_PERCENTAGE, &diagnosticSamplingPercentage);
-#endif
-
-#ifdef IOTDEVICE_TRUSTED_CERT
-    IoTHubDeviceClient_LL_SetOption(iotHubClientHandle, OPTION_TRUSTED_CERT, IOTDEVICE_TRUSTED_CERT);
-#endif
-
-#ifdef IOTDEVICE_AUTO_URL_ENCODE_DECODE
-    bool autoUrlEncodeDecode = IOTDEVICE_AUTO_URL_ENCODE_DECODE;
-    IoTHubDeviceClient_LL_SetOption(iotHubClientHandle, OPTION_AUTO_URL_ENCODE_DECODE, &autoUrlEncodeDecode);
-#endif
-  
-  (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(iotHubClientHandle, IoTDevice_ConnectionStatusCallback, NULL);
-}
-
-static void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
-{
-    clientConnected = false;
-
-    switch (reason)
-    {
-    case IOTHUB_CLIENT_CONNECTION_EXPIRED_SAS_TOKEN:
-        if (result == IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED)
-        {
-            LogInfo(">>> Connection status: timeout");
-        }
-        break;
-    case IOTHUB_CLIENT_CONNECTION_DEVICE_DISABLED:
-        break;
-    case IOTHUB_CLIENT_CONNECTION_BAD_CREDENTIAL:
-        break;
-    case IOTHUB_CLIENT_CONNECTION_RETRY_EXPIRED:
-        break;
-    case IOTHUB_CLIENT_CONNECTION_NO_NETWORK:
-        if (result == IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED)
-        {
-            LogInfo(">>> Connection status: disconnected");
-        }
-        break;
-    case IOTHUB_CLIENT_CONNECTION_COMMUNICATION_ERROR:
-        break;
-    case IOTHUB_CLIENT_CONNECTION_OK:
-        if (result == IOTHUB_CLIENT_CONNECTION_AUTHENTICATED)
-        {
-            clientConnected = true;
-            LogInfo(">>> Connection status: connected");
-        }
-        break;
-    }
 }

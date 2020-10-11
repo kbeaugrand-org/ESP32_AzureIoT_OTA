@@ -4,9 +4,17 @@
 #include <WiFi.h>
 #include <Update.h>
 
+#include "device_ota.h"
+
 WiFiClient client;
 int contentLength;
 bool isValidContentType;
+
+// Utility to extract header value from headers
+static String getHeaderValue(String header, String headerName)
+{
+    return header.substring(strlen(headerName.c_str()));
+}
 
 void OTA_Start(String host, int port, String bin)
 {
@@ -62,8 +70,8 @@ void OTA_Start(String host, int port, String bin)
             // Start with content length
             if (line.startsWith("Content-Length: "))
             {
-                this->contentLength = atol((getHeaderValue(line, "Content-Length: ")).c_str());
-                Serial.println("Got " + String(this->contentLength) + " bytes from server");
+                contentLength = atol((getHeaderValue(line, "Content-Length: ")).c_str());
+                Serial.println("Got " + String(contentLength) + " bytes from server");
             }
             // Next, the content type
             if (line.startsWith("Content-Type: "))
@@ -72,7 +80,7 @@ void OTA_Start(String host, int port, String bin)
                 Serial.println("Got " + contentType + " payload.");
                 if (contentType == "application/octet-stream")
                 {
-                    this->isValidContentType = true;
+                    isValidContentType = true;
                 }
             }
         }
@@ -82,12 +90,12 @@ void OTA_Start(String host, int port, String bin)
         Serial.println("Connection to " + String(host) + " failed. Please check your setup");
     }
     // Check what is the contentLength and if content type is `application/octet-stream`
-    Serial.println("contentLength : " + String(this->contentLength) + ", isValidContentType : " + String(this->isValidContentType));
+    Serial.println("contentLength : " + String(contentLength) + ", isValidContentType : " + String(isValidContentType));
     // check contentLength and content type
-    if (this->contentLength && this->isValidContentType)
+    if (contentLength && isValidContentType)
     {
         // Check if there is enough to OTA Update
-        bool canBegin = Update.begin(this->contentLength);
+        bool canBegin = Update.begin(contentLength);
         // If yes, begin
         if (canBegin)
         {
@@ -95,13 +103,13 @@ void OTA_Start(String host, int port, String bin)
             // No activity would appear on the Serial monitor
             // So be patient. This may take 2 - 5mins to complete
             size_t written = Update.writeStream(client);
-            if (written == this->contentLength)
+            if (written == contentLength)
             {
                 Serial.println("Written : " + String(written) + " successfully");
             }
             else
             {
-                Serial.println("Written only : " + String(written) + "/" + String(this->contentLength) + ". Retry?");
+                Serial.println("Written only : " + String(written) + "/" + String(contentLength) + ". Retry?");
             }
             if (Update.end())
             {
@@ -135,10 +143,4 @@ void OTA_Start(String host, int port, String bin)
         Serial.println("There was no content in the response");
         client.flush();
     }
-}
-
-// Utility to extract header value from headers
-static String getHeaderValue(String header, String headerName)
-{
-    return header.substring(strlen(headerName.c_str()));
 }

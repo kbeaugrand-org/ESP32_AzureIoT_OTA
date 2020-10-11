@@ -52,7 +52,7 @@ public:
     // Construct the iothub message from a string or a byte array
     IOTHUB_MESSAGE_HANDLE messageHandle  = IoTHubMessage_CreateFromString(output.c_str());
 
-    IoTHubDeviceClient_LL_SendEventAsync(this->iotHubClientHandle, messageHandle, sendConfirmationCallback, NULL);
+    IoTHubDeviceClient_LL_SendEventAsync(__hub_client_handle__, messageHandle, sendConfirmationCallback, NULL);
 
     // The message is copied to the sdk so the we can destroy it
     IoTHubMessage_Destroy(messageHandle);
@@ -73,7 +73,7 @@ private:
   bool connectionStatus;
   OTA DeviceOTA;
   DeviceConfiguration config;
-  IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle;
+  IOTHUB_CLIENT_LL_HANDLE __hub_client_handle__;
   int receiveContext;
   
   #ifdef PROTOCOL_MQTT
@@ -108,12 +108,12 @@ private:
   void connectHub(const char *connectionString)
   {
     Serial.println("Connecting the client");
-    this->iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(connectionString, protocol);
+    __hub_client_handle__ = IoTHubClient_LL_CreateFromConnectionString(connectionString, protocol);
 
     // Used to initialize IoTHub SDK subsystem
     (void)IoTHub_Init();
 
-    if (this->iotHubClientHandle  == NULL)
+    if (__hub_client_handle__  == NULL)
     {
         Serial.printf("Error AZ002: Failure createing Iothub device. Hint: Check you connection string.\n");
     }
@@ -121,7 +121,7 @@ private:
     Serial.printf("Connected to Iothub.\n");
     Serial.printf("Connecting to the device...\n");
 
-    //IoTHubDeviceClient_LL_SetOption(this->iotHubClientHandle, OPTION_TRUSTED_CERT, certificates);
+    //IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_TRUSTED_CERT, certificates);
   }
 
   void connectWifi(const char *ssid, const char *password)
@@ -153,20 +153,20 @@ private:
       // Set any option that are neccessary.
       // For available options please see the iothub_sdk_options.md documentation
       int diagnosticsSamplingPercent = 0;
-      IoTHubDeviceClient_LL_SetOption(this->iotHubClientHandle, OPTION_DIAGNOSTIC_SAMPLING_PERCENTAGE, &diagnosticsSamplingPercent);
+      IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_DIAGNOSTIC_SAMPLING_PERCENTAGE, &diagnosticsSamplingPercent);
 
       // Setting the Trusted Certificate.
-      //IoTHubDeviceClient_LL_SetOption(this->iotHubClientHandle, OPTION_TRUSTED_CERT, certificates);
+      //IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_TRUSTED_CERT, certificates);
 
 #ifdef PROTOCOL_MQTT || defined PROTOCOL_MQTT_WS
         //Setting the auto URL Encoder (recommended for MQTT). Please use this option unless
         //you are URL Encoding inputs yourself.
         //ONLY valid for use with MQTT
         bool autoUrlEncode = true;
-        IoTHubDeviceClient_LL_SetOption(this->iotHubClientHandle, OPTION_AUTO_URL_ENCODE_DECODE, &autoUrlEncode);
+        IoTHubDeviceClient_LL_SetOption(__hub_client_handle__, OPTION_AUTO_URL_ENCODE_DECODE, &autoUrlEncode);
 #endif
 
-      if (IoTHubClient_LL_SetMessageCallback(this->iotHubClientHandle, IoTDevice::messageCallback, &this->receiveContext) != IOTHUB_CLIENT_OK)
+      if (IoTHubClient_LL_SetMessageCallback(__hub_client_handle__, IoTDevice::messageCallback, &this->receiveContext) != IOTHUB_CLIENT_OK)
       {
           Serial.printf("ERROR: IoTHubClient_LL_SetMessageCallback..........FAILED!\r\n");
       }
@@ -175,7 +175,7 @@ private:
          Serial.printf("MessageCallback set.\n");
       }
       
-      (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(this->iotHubClientHandle, IoTDevice::connection_status_callback, NULL);
+      (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(__hub_client_handle__, IoTDevice::connection_status_callback, NULL);
     }
 
   static void connnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason){
@@ -327,7 +327,7 @@ private:
 
       file.close();
 
-      IoTHubClient_LL_SendReportedState(this->iotHubClientHandle, (const unsigned char*)reportedState, output.length(), reportedStateCallback, NULL);
+      IoTHubClient_LL_SendReportedState(__hub_client_handle__, (const unsigned char*)reportedState, output.length(), reportedStateCallback, NULL);
 
       doc["reported"] = true;
 
