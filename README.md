@@ -15,6 +15,7 @@ At time this document is written you may have to install:
 
 * VS Code 1.48.2
     > This is needed because a bug with Serial Monitor
+    > [https://github.com/microsoft/vscode-arduino/issues/1098](https://github.com/microsoft/vscode-arduino/issues/1098)
 
 * Arduino Extension 0.30
     > This may be installed with VS Code command

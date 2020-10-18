@@ -6,6 +6,10 @@
 */
 #define BLINK_LED_PIN 2
 
+void BlinkLed_Init() {
+  pinMode(BLINK_LED_PIN, OUTPUT);  
+}
+
 void BlinkLed_High()
 {
   digitalWrite(BLINK_LED_PIN, HIGH);

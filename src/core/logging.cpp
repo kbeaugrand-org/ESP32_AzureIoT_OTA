@@ -18,20 +18,27 @@ void global_log(LOG_LEVEL log_category, const char* file, const char* func, int 
 
     switch (log_category)
     {
-    case INFO:
-        (void)printf("Info: ");
-        break;
-    case ERROR:
-        (void)printf("Error: Time:%.24s File:%s Func:%s Line:%d ", ctime(&t), file, func, line);
-        break;
-    default:
-        break;
+        case INFO:
+            printf("Info: ");
+            break;
+        case TRACE:
+            printf("Trace: ");
+            break;
+        case DEBUG:
+            printf("Debug: ");
+            break;
+        case ERROR:
+            printf("Error: at %.24s File:%s, func:%s, line:%d \n\t>> ", ctime(&t), file, func, line);
+            break;
+        default:
+            break;
     }
 
-    (void)vprintf(format, args);
-    va_end(args);
+    // use vprintf to print variable arguments
+    vprintf(format, args);
+    printf("\n");
 
-    (void)log_category;
+    va_end(args);
 }
 
 LOGGER global_log_func = global_log;

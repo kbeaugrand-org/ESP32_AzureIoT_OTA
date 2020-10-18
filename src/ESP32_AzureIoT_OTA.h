@@ -12,6 +12,7 @@ extern "C"
 #include "core/constants.h"
 #include "core/blink.h"
 #include "core/device_configuration.h"
+#include "core/logging.h"
 
 #include "core/iot_device_connection.h"
 #include "core/iot_device_d2c.h"

@@ -9,9 +9,13 @@ extern "C"
 {
 #endif
 
+static const char* CONFIGURATION_FILENAME = "/config.ini";
+
 void DeviceConfiguration_Init();
 
 const char* DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size);
+
+const char* DeviceConfiguration_GetFileContent(const char* filePath);
 
 #ifdef __cplusplus
 }   // extern "C"

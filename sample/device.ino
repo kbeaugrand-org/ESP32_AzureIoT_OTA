@@ -3,14 +3,15 @@
  */
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <SPIFFS.h>
+#include <SPIFFSIniFile.h>
 
-#define IOTDEVICE_PROTOCOL_MQTT
+#define IOTDEVICE_PROTOCOL_HTTP
 
 #include <ESP32_AzureIoT_OTA.h>
 
 void setup()
 {
-  pinMode(BLINK_LED_PIN, OUTPUT);
   Serial.begin(115200);
 
   IoTDevice_ConnectFromConfiguration();
@@ -18,12 +19,11 @@ void setup()
 }
 
 void loop()
-{  
-  if(!IoTDevice_IsConnected()){
-    BlinkLed_Blink();
-    return;
+{ 
+  if(!IoTDevice_IsConnected()) {
+    delay(2000);
   }
-
+  
   DynamicJsonDocument doc(1024);
 
   doc["random"] = random(300);
@@ -31,12 +31,11 @@ void loop()
   doc["sensor"] = "gps";
   doc["data"][0] = 48.756080;
   doc["data"][1] = 2.302038;
-  
-  IoTDevice_Send(doc);
 
-  StaticJsonDocument<TWIN_SIZE> desiredProperties = IoTDevice_GetDesiredProperties();
+  String output;
 
-  delay(desiredProperties["telemetry"]["frequency"].as<int>());
+  serializeJson(doc, output);
+  IoTDevice_Send(output.c_str());
 
   delay(2000);
 }

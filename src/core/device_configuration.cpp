@@ -10,39 +10,120 @@
 #include "constants.h"
 #include "device_configuration.h"
 
-#ifndef CONFIGURATION_FILENAME
-#define CONFIGURATION_FILENAME "config.ini"
-#endif
+static SPIFFSIniFile* __DeviceConfigurationFile__;
+
+static void DeviceConfiguration_OpenAndValidate()
+{
+    char configFileName[128]; 
+
+    strcpy(configFileName, CONFIGURATION_FILE_PATH);
+    strcat(configFileName, CONFIGURATION_FILENAME);
+
+    __DeviceConfigurationFile__ = new SPIFFSIniFile(configFileName);
+
+    Log_Debug("Opening file %s", configFileName);
+
+    if (!__DeviceConfigurationFile__->open())
+    {
+        Log_Error("Ini file %s does not exist", configFileName);
+    }
+
+    char* buffer = (char*) malloc(512);
+
+    if (!__DeviceConfigurationFile__->validate(buffer, 512))
+    {
+        Log_Error("Ini file %s contains errors\n %s", configFileName, buffer);
+        free(buffer);
+    }
+}
+
+static const char* DeviceConfiguration_GetErrorText(){
+    SPIFFSIniFile::error_t error= __DeviceConfigurationFile__->getError();
+        char* errorText;
+
+        switch (error)
+        {
+        case SPIFFSIniFile::error_t::errorNoError:
+            return "No Error";
+            break;
+        case SPIFFSIniFile::error_t::errorFileNotFound:
+            return "File not found";
+            break;
+        case SPIFFSIniFile::error_t::errorFileNotOpen:
+            return "File not open";
+            break;
+        case SPIFFSIniFile::error_t::errorBufferTooSmall:
+            return "Buffer too small";
+            break;        
+        case SPIFFSIniFile::error_t::errorSeekError:
+            return "Seek error";
+            break;        
+        case SPIFFSIniFile::error_t::errorSectionNotFound:
+            return "Section not found";
+            break;        
+        case SPIFFSIniFile::error_t::errorKeyNotFound:
+            return "Key not found";
+            break;      
+        case SPIFFSIniFile::error_t::errorEndOfFile:
+            return "End of file";
+            break;      
+        case SPIFFSIniFile::error_t::errorUnknownError:
+            return "Unknown error";
+            break;
+        
+        default:
+            break;
+        }
+}
 
 void DeviceConfiguration_Init() {
-    
+    Log_Debug("Mounting SPIFFS file system: %s", CONFIGURATION_FILE_PATH);
+
     if (!SPIFFS.begin(false, CONFIGURATION_FILE_PATH))
     {
         Log_Error("Mount Failed");
         return;
     }
 
-    Log_Info("Used %s over %s bytes.", SPIFFS.usedBytes(), SPIFFS.totalBytes());
+    Log_Debug("Used %d over %d bytes", SPIFFS.usedBytes(), SPIFFS.totalBytes());
     Log_Info("File system mounted");
+
+    DeviceConfiguration_OpenAndValidate();
 }
 
-const char*  DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size)
+const char* DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size)
 {
+    Log_Trace("Getting [%s][%s]", section, key);
+
     char* buffer = (char*) malloc(max_size + 1);
-    const char* filename = (CONFIGURATION_FILE_PATH + String("/") + CONFIGURATION_FILENAME).c_str();
-    SPIFFSIniFile file(filename);
 
-    if (!file.open())
+    if (!__DeviceConfigurationFile__->getValue(section, key, buffer, max_size))
     {
-        Log_Error("Ini file %s does not exist.", CONFIGURATION_FILENAME);
+        Log_Error("Cannot get [%s][%s] due to error %s", section, key, DeviceConfiguration_GetErrorText());
+
         return "";
     }
 
-    if (!file.getValue(section, key, buffer, max_size))
-    {
-        Log_Error("Section '%s' does not have an entry '%s'!", section, key);
-        return "";
-    }
+    Log_Debug("[%s][%s] = %s", section, key, buffer);
 
     return buffer;
+}
+
+const char* DeviceConfiguration_GetFileContent(const char* filePath)
+{
+    Log_Trace("%s opening for reading.", filePath);
+
+    fs::File file = SPIFFS.open(filePath, "r");
+
+    if (file == NULL)
+    {
+        Log_Error("Error could not open file %s for reading\n", filePath);
+        return NULL;
+    }
+
+    const char* result = file.readString().c_str();
+
+    file.close();
+
+    return result;
 }

@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-bool IoTDevice_Send(DynamicJsonDocument message);
+bool IoTDevice_Send(const char* message);
 
 #ifdef __cplusplus
 }   // extern "C"

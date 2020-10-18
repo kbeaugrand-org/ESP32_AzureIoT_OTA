@@ -11,6 +11,8 @@ extern "C"
 {
 #endif
 
+void BlinkLed_Init();
+
 void BlinkLed_Blink();
 
 void BlinkLed_High();

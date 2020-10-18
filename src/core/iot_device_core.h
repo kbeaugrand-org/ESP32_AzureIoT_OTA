@@ -3,15 +3,15 @@
 
 #include <AzureIoTHub.h>
 
-// #ifdef __cplusplus
-// extern "C"
-// {
-// #endif
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-static  IOTHUB_CLIENT_LL_HANDLE __hub_client_handle__;
+extern IOTHUB_CLIENT_LL_HANDLE __hub_client_handle__;
 
-// #ifdef __cplusplus
-// }   // extern "C"
-// #endif /* __cplusplus */
+#ifdef __cplusplus
+}   // extern "C"
+#endif /* __cplusplus */
 
 #endif

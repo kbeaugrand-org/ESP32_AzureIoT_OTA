@@ -20,19 +20,20 @@ static void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT
   }
 }
 
-bool IoTDevice_Send(DynamicJsonDocument message)
+bool IoTDevice_Send(const char* message)
 {
-  String output;
-
-  serializeJson(message, output);
-  Log_Info("Sending message: %s", output);
+  Log_Info("Sending message: %s", message);
 
   // Construct the iothub message from a string or a byte array
-  IOTHUB_MESSAGE_HANDLE messageHandle  = IoTHubMessage_CreateFromString(output.c_str());
+  IOTHUB_MESSAGE_HANDLE messageHandle  = IoTHubMessage_CreateFromString(message);
+  
   IoTHubDeviceClient_LL_SendEventAsync(__hub_client_handle__, messageHandle, IoTDevice_SendConfirmationCallback, NULL);
 
   // The message is copied to the sdk so the we can destroy it
   IoTHubMessage_Destroy(messageHandle);
+
+  IoTHubDeviceClient_LL_DoWork(__hub_client_handle__);       
+  ThreadAPI_Sleep(3);
 }
 
 #endif
