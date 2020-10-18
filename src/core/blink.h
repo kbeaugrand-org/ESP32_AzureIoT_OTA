@@ -11,12 +11,36 @@ extern "C"
 {
 #endif
 
+/**
+* @brief   Initializes the Blink Led configuration.
+*
+*            This is a blocking call.
+*
+*/
 void BlinkLed_Init();
 
+/**
+* @brief   Realizes a blink on Led.
+*
+*            This is a blocking call.
+*
+*/
 void BlinkLed_Blink();
 
+/**
+* @brief   Sets the Led High.
+*
+*            This is a blocking call.
+*
+*/
 void BlinkLed_High();
 
+/**
+* @brief   Sets the Led Low.
+*
+*            This is a blocking call.
+*
+*/
 void BlinkLed_Low();
 
 #ifdef __cplusplus

@@ -10,6 +10,11 @@ extern "C"
 {
 #endif
 
+/**
+* @brief   Gets the device desired properties.
+*
+* @return  A Json Document representing the desired properties on device twin.
+*/
 StaticJsonDocument<TWIN_SIZE> IoTDevice_GetDesiredProperties();
 
 #ifdef __cplusplus
