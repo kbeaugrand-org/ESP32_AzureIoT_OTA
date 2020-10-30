@@ -125,6 +125,7 @@ DynamicJsonDocument IoTDevice_GetReportedProperties()
 void IoTDevice_ReportState(DynamicJsonDocument reportedState)
 {
   Log_Info("Sending reported properties state");
+  reportedState.remove("$version");
 
   char* content = (char *) malloc(measureJson(reportedState) + 1 );
   size_t size = serializeJson(reportedState, content, measureJson(reportedState) + 1);
