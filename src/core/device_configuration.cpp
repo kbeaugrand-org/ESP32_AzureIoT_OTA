@@ -10,7 +10,7 @@
 #include "constants.h"
 #include "device_configuration.h"
 
-static SPIFFSIniFile* __DeviceConfigurationFile__;
+static SPIFFSIniFile *__DeviceConfigurationFile__;
 
 static void DeviceConfiguration_OpenAndValidate()
 {
@@ -28,7 +28,7 @@ static void DeviceConfiguration_OpenAndValidate()
         Log_Error("Ini file %s does not exist", configFileName);
     }
 
-    char* buffer = (char*) malloc(512);
+    char *buffer = (char *) malloc(512);
 
     if (!__DeviceConfigurationFile__->validate(buffer, 512))
     {
@@ -37,9 +37,9 @@ static void DeviceConfiguration_OpenAndValidate()
     }
 }
 
-static const char* DeviceConfiguration_GetErrorText(){
+static const char *DeviceConfiguration_GetErrorText(){
     SPIFFSIniFile::error_t error= __DeviceConfigurationFile__->getError();
-        char* errorText;
+        char *errorText;
 
         switch (error)
         {
@@ -91,11 +91,11 @@ void DeviceConfiguration_Init() {
     DeviceConfiguration_OpenAndValidate();
 }
 
-const char* DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size)
+const char *DeviceConfiguration_Get(const char *section, const char *key, const size_t max_size)
 {
     Log_Trace("Getting [%s][%s]", section, key);
 
-    char* buffer = (char*) malloc(max_size + 1);
+    char *buffer = (char *) malloc(max_size + 1);
 
     if (!__DeviceConfigurationFile__->getValue(section, key, buffer, max_size))
     {
@@ -109,7 +109,29 @@ const char* DeviceConfiguration_Get(const char *section, const char *key, const 
     return buffer;
 }
 
-const char* DeviceConfiguration_GetFileContent(const char* filePath)
+void DeviceConfiguration_WriteFileContent(const char *filePath, const char *content, size_t size)
+{
+    Log_Trace("%s opening for writing", filePath);
+
+    fs::File file = SPIFFS.open(filePath, "w");
+
+    if (file == NULL)
+    {
+        Log_Error("Error could not open file %s for writing\n", filePath);
+        return;
+    }
+
+    size_t written = file.print(content);
+
+    if (written != size)
+    {
+        Log_Error("Error when writing file. Only %d bytes, specified %d bytes", written, size);
+    }
+
+    file.close();
+}
+
+const char *DeviceConfiguration_GetFileContent(const char *filePath, size_t *size)
 {
     Log_Trace("%s opening for reading.", filePath);
 
@@ -121,9 +143,19 @@ const char* DeviceConfiguration_GetFileContent(const char* filePath)
         return NULL;
     }
 
-    const char* result = file.readString().c_str();
+    *size = file.available();
+    char *content = (char *)malloc(*size + 1);
+    
+    if(content == NULL)
+    {
+        Log_Error("Not enough memory to allocate %d bytes.", size);
+        file.close();
+        return NULL;
+    }
+    
+    *size = file.readBytes(content, *size);
 
     file.close();
 
-    return result;
+    return content;
 }

@@ -16,10 +16,12 @@ extern "C"
 
 #include "core/iot_device_connection.h"
 #include "core/iot_device_d2c.h"
-#include "core/iot_device_twin.h"
 
 #ifdef __cplusplus
 }   // extern "C"
 #endif /* __cplusplus */
+
+// Since device twin uses templates that are not compatible with extern "C"
+#include "core/iot_device_twin.h"
 
 #endif

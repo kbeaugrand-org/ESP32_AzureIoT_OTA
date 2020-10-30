@@ -14,7 +14,7 @@ extern "C" {
 #define LOG_LEVEL_ERROR 3
 
 #ifndef LOGGING_LOG_LEVEL
-#define LOGGING_LOG_LEVEL LOG_LEVEL_INFO
+#define LOGGING_LOG_LEVEL LOG_LEVEL_TRACE
 #endif
 
 typedef enum LOG_LEVEL
@@ -30,7 +30,7 @@ typedef enum LOG_LEVEL
 
 #define FUNC_NAME __func__
 
-typedef void(*LOGGER)(LOG_LEVEL log_category, const char* file, const char* func, int line, unsigned int options, const char* format, ...);
+typedef void(*LOGGER)(LOG_LEVEL log_category, const char *file, const char *func, int line, unsigned int options, const char *format, ...);
 
 /*no logging is useful when time and fprintf are mocked*/
 #ifdef NO_LOGGING

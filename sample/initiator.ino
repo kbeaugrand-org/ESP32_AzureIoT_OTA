@@ -1,5 +1,3 @@
-// #include <ArduinoJson.h>
-
 // #include <SPIFFSIniFile.h>
 // #include "SPIFFS.h"
 
@@ -82,7 +80,7 @@
 //   const size_t bufferLen = 80;
 //   char buffer[bufferLen];
 
-//   const char* certFileName = "/device/ca.pem";
+//   const char *certFileName = "/device/ca.pem";
 //   File writerCA = SPIFFS.open(certFileName, "w");
 //   writerCA.print(certificates);
 //   writerCA.close();

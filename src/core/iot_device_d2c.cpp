@@ -1,14 +1,13 @@
 #ifndef IOT_DEVICE_D2C_H
 #define IOT_DEVICE_D2C_H
 
-#include <ArduinoJson.h>
 #include "logging.h"
 
 #include "iot_device_d2c.h"
 #include "iot_device_core.h"
 #include "blink.h"
 
-static void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
+static void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *userContextCallback)
 {
   if (result == IOTHUB_CLIENT_CONFIRMATION_OK)
   {
@@ -20,7 +19,7 @@ static void IoTDevice_SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT
   }
 }
 
-bool IoTDevice_Send(const char* message)
+bool IoTDevice_Send(const char *message)
 {
   Log_Info("Sending message: %s", message);
 

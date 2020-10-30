@@ -8,7 +8,7 @@
 
 #ifndef NO_LOGGING
 
-void global_log(LOG_LEVEL log_category, const char* file, const char* func, int line, unsigned int options, const char* format, ...)
+void global_log(LOG_LEVEL log_category, const char *file, const char *func, int line, unsigned int options, const char *format, ...)
 {
     time_t t;
     va_list args;

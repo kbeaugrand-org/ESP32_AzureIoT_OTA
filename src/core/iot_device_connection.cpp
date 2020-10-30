@@ -7,6 +7,7 @@
 #include "blink.h"
 #include "logging.h"
 #include "device_configuration.h"
+#include "iot_device_core.h"
 #include "iot_device_connection.h"
 
 #ifndef IOTDEVICE_PROTOCOL_MQTT
@@ -39,7 +40,7 @@ IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol = HTTP_Protocol;
 int receiveContext;
 bool clientConnected = false;
 
-static void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
+static void IoTDevice_ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void *user_context)
 {
     clientConnected = false;
 
@@ -101,7 +102,7 @@ static void IoTDevice_InitDeviceTime()
   Log_Info("Initializing Device Time");
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
 
-  const char* ntpHostName = DeviceConfiguration_Get("ntp", "hostname", 256);
+  const char *ntpHostName = DeviceConfiguration_Get("ntp", "hostname", 256);
 
   if (String(ntpHostName).equals(""))
   {
@@ -109,7 +110,7 @@ static void IoTDevice_InitDeviceTime()
   }
 
   Log_Debug("Adding SNTP host: %s", ntpHostName);
-  sntp_setservername(0, (char*) ntpHostName);
+  sntp_setservername(0, (char *) ntpHostName);
   
   sntp_init();
   time_t ts = 0;
@@ -131,7 +132,7 @@ static void IoTDevice_InitDeviceTime()
   return;
 }
 
-static void IoTDevice_ConfigureOption(const char* optionName,  const void* value)
+static void IoTDevice_ConfigureOption(const char *optionName,  const void *value)
 {
   Log_Trace("Setting %s", optionName);
   Log_Debug("%s = %s", optionName, value);
@@ -141,28 +142,11 @@ static void IoTDevice_ConfigureOption(const char* optionName,  const void* value
     return;
   }
 
-  const char* resultCode = NULL;
-
-  switch (result)
-  {
-  case IOTHUB_CLIENT_INVALID_ARG:
-    resultCode = "IOTHUB_CLIENT_INVALID_ARG";
-    break;
-  
-  case IOTHUB_CLIENT_ERROR:
-    resultCode = "IOTHUB_CLIENT_ERROR";
-    break;
-    
-  case IOTHUB_CLIENT_INVALID_SIZE:
-    resultCode = "IOTHUB_CLIENT_INVALID_SIZE";
-    break;
-    
-  case IOTHUB_CLIENT_INDEFINITE_TIME:
-    resultCode = "IOTHUB_CLIENT_INDEFINITE_TIME";
-    break;
-  }
+  const char * resultCode = IoTDevice_GetErrorText(result);
 
   Log_Error("Unable to set %s => %s", optionName, resultCode);
+  
+  free((char *)resultCode);
 }
 
 /* -- ConfigureOptions --
@@ -176,21 +160,19 @@ static void IoTDevice_ConfigureOptions()
   int diag_off = 0;
   IoTDevice_ConfigureOption(OPTION_DIAGNOSTIC_SAMPLING_PERCENTAGE, &diag_off);
 
-#ifndef IOTDEVICE_PROTOCOL_HTTP and LOGGING_LOG_LEVEL = LOG_LEVEL_TRACE
+#if not defined IOTDEVICE_PROTOCOL_HTTP and LOGGING_LOG_LEVEL == LOG_LEVEL_TRACE
   // Example sdk status tracing for troubleshooting
   bool traceOn = true;
   IoTDevice_ConfigureOption(OPTION_LOG_TRACE, &traceOn);
 #endif // IOTDEVICE_PROTOCOL_HTTP
 
   // Setting the Trusted Certificate.
-  const char* certPath = DeviceConfiguration_Get("core", "caPath", 4096);
-  const char* content = DeviceConfiguration_GetFileContent(certPath);
+  const char *certPath = DeviceConfiguration_Get("core", "caPath", 256);
+  size_t certificatesLen;
 
-  int certificatesLen = strlen(content);
-  char certificates[certificatesLen];
-
-  strcpy(certificates, content);
-  IoTDevice_ConfigureOption(OPTION_TRUSTED_CERT, certificates);
+  const char *content = DeviceConfiguration_GetFileContent(certPath, &certificatesLen);
+  
+  IoTDevice_ConfigureOption(OPTION_TRUSTED_CERT, content);
 
 #ifdef IOTDEVICE_PROTOCOL_MQTT
   //Setting the auto URL Encoder (recommended for MQTT). Please use this option unless
@@ -198,15 +180,13 @@ static void IoTDevice_ConfigureOptions()
   //ONLY valid for use with MQTT
   bool urlEncodeOn = true;
   IoTDevice_ConfigureOption(OPTION_AUTO_URL_ENCODE_DECODE, &urlEncodeOn);
-  /* Setting Message call back, so we can receive Commands. */
-  // if (IoTHubClient_LL_SetMessageCallback(__hub_client_handle__, IoTDevice_Message, &receiveContext) != IOTHUB_CLIENT_OK)
-  // {
-  //     LogInfo("ERROR: IoTHubClient_LL_SetMessageCallback..........FAILED!\r\n");
-  // }
 #endif // IOTDEVICE_PROTOCOL_MQTT
 
   // Setting connection status callback to get indication of connection to iothub
   (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(__hub_client_handle__, IoTDevice_ConnectionStatusCallback, NULL);
+
+  // Setting device twin callback
+  (void)IoTHubDeviceClient_LL_SetDeviceTwinCallback(__hub_client_handle__, IoTDevice_DeviceTwinCallback, NULL);
 }
 
 static void IoTDevice_ConnectToHub(const char *connectionString)
@@ -232,10 +212,15 @@ static void IoTDevice_ConnectToHub(const char *connectionString)
     }
 
     IoTDevice_ConfigureOptions();
+    IoTHubDeviceClient_LL_DoWork(__hub_client_handle__);
+    ThreadAPI_Sleep(500);
+
+    IoTHubDeviceClient_LL_GetTwinAsync(__hub_client_handle__, IoTDevice_DeviceTwinCallback, NULL);
 }
 
 bool IoTDevice_IsConnected(){
-  return clientConnected;
+  IoTHubDeviceClient_LL_DoWork(__hub_client_handle__);
+  return clientConnected && __twin_received__;
 }
 
 void IoTDevice_ConnectFromConfiguration() {

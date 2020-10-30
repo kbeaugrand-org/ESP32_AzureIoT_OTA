@@ -1,8 +1,6 @@
 #ifndef __ESP32_AzureIoT_OTA_DEVICED2C_H__
 #define __ESP32_AzureIoT_OTA_DEVICED2C_H__
 
-#include <ArduinoJson.h>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -15,7 +13,7 @@ extern "C"
 *
 * @return   True if the message was send to the gateway.
 */
-bool IoTDevice_Send(const char* message);
+bool IoTDevice_Send(const char *message);
 
 #ifdef __cplusplus
 }   // extern "C"

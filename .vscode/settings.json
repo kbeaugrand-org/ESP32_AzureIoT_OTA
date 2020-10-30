@@ -2,5 +2,16 @@
     "files.exclude": {
         ".build": true,
         ".iotworkbenchproject": true
+    },
+    "files.associations": {
+        "functional": "cpp",
+        "type_traits": "cpp",
+        "array": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "unordered_map": "cpp"
     }
 }
