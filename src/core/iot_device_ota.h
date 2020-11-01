@@ -11,7 +11,12 @@ extern "C"
 {
 #endif
 
-void OTA_Start(String host, int port, String bin);
+/**
+* @brief    Starts the device Firmware update OTA from the device twin desired properties.
+*
+*            This is a blocking call.
+*/
+void IoTDevice_StartOTA();
 
 #ifdef __cplusplus
 }   // extern "C"

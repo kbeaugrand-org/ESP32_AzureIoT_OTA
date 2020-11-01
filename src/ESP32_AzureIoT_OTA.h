@@ -16,6 +16,7 @@ extern "C"
 
 #include "core/iot_device_connection.h"
 #include "core/iot_device_d2c.h"
+#include "core/iot_device_ota.h"
 
 #ifdef __cplusplus
 }   // extern "C"

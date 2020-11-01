@@ -9,24 +9,20 @@
 
 #define DEFAULT_TELEMETRY_FREQUENCY 5000
 
-int sensorPin = 33;   
+#define FIRMWARE_VERSION "0.0.2"
 
-typedef struct TELEMETRY_MSG {
-  long random;
-  char *sensor;
-  int data[];
-} TelemetryMessage;
+int sensorPin = 34;   
 
 // Cette fonction convertit la valeur analogique lue en température en °C
-double Thermistor(int RawADC) {
-   double Temp;
-   Temp = log(10000.0 * ((1024.0 / RawADC - 1)));
-   Log_Trace("log(10000.0 * ((1024.0 / %d - 1))) = %d", RawADC, Temp);
-   Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp )) * Temp );
-   Log_Trace("1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp )) * Temp ) = %d", Temp);
-   Temp = Temp - 273.15; // conversion de degrés Kelvin en °C
-   Log_Trace("Temp - 273.15 = %d", Temp);
-   return Temp;
+double Thermistor() {
+  int RawADC = analogRead(sensorPin);
+  double Temp;
+
+  Temp = log(10000.0 * ((1024.0 / RawADC - 1)));
+  Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp )) * Temp );
+  Temp = Temp - 273.15;            // conversion de degrés Kelvin en °C
+  
+  return Temp;
 }
 
 DynamicJsonDocument CheckPropertiesState()
@@ -34,9 +30,15 @@ DynamicJsonDocument CheckPropertiesState()
   bool hasChanged = false;
 
   DynamicJsonDocument propertiesState = IoTDevice_GetReportedProperties(); 
-  DynamicJsonDocument desiredState = IoTDevice_GetDesiredProperties();     
-  
-  if (desiredState["telemetry"]["frequency"].as<int>() != propertiesState["telemetry"]["frequency"].as<int>())
+  DynamicJsonDocument desiredState = IoTDevice_GetDesiredProperties();   
+
+  if (propertiesState["firmware"]["version"] != FIRMWARE_VERSION)
+  {
+    propertiesState["firmware"]["version"] = FIRMWARE_VERSION;
+    hasChanged = true;
+  }  
+
+  if (propertiesState["telemetry"]["frequency"].as<int>() != desiredState["telemetry"]["frequency"].as<int>())
   {
     propertiesState["telemetry"]["frequency"].set(desiredState["telemetry"]["frequency"].as<int>());
     hasChanged = true;
@@ -44,6 +46,11 @@ DynamicJsonDocument CheckPropertiesState()
 
   if(hasChanged){
     IoTDevice_ReportState(propertiesState);
+  }
+
+  if (propertiesState["firmware"]["version"] != desiredState["firmware"]["version"])
+  {
+    IoTDevice_StartOTA();
   }
 
   return propertiesState;
@@ -54,7 +61,6 @@ void setup()
   Serial.begin(115200);
 
   IoTDevice_ConnectFromConfiguration();
-  pinMode(sensorPin, INPUT);
   randomSeed(analogRead(0));
 
   // Wait for device connection
@@ -63,23 +69,22 @@ void setup()
 
 void loop()
 { 
-  int readVal = analogRead(sensorPin);
-  double temp = Thermistor(readVal);
+  DynamicJsonDocument propertiesState = CheckPropertiesState();
+  int waitTime = propertiesState["telemetry"]["frequency"] | DEFAULT_TELEMETRY_FREQUENCY;
+
+  double temp = Thermistor();
 
   DynamicJsonDocument doc(1024);
 
   doc["sensor"] = "temp";
+  doc["unit"]   = "C";
+  doc["value"] = temp;
 
   String output;
 
   serializeJson(doc, output);
   IoTDevice_Send(output.c_str());
-
-  DynamicJsonDocument propertiesState = CheckPropertiesState();
   
-  int waitTime = propertiesState["telemetry"]["frequency"] | DEFAULT_TELEMETRY_FREQUENCY;
-
   Log_Info("Waiting for next value: %ds", waitTime);
-
   delay(waitTime);
 }
