@@ -3,27 +3,14 @@
  */
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <SPIFFS.h>
-#include <SPIFFSIniFile.h>
 #include <ESP32_AzureIoT_OTA.h>
+#include <DHTesp.h>
 
 #define DEFAULT_TELEMETRY_FREQUENCY 5000
 
-#define FIRMWARE_VERSION "0.0.2"
+#define FIRMWARE_VERSION "0.0.1"
 
-int sensorPin = 34;   
-
-// Cette fonction convertit la valeur analogique lue en température en °C
-double Thermistor() {
-  int RawADC = analogRead(sensorPin);
-  double Temp;
-
-  Temp = log(10000.0 * ((1024.0 / RawADC - 1)));
-  Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp )) * Temp );
-  Temp = Temp - 273.15;            // conversion de degrés Kelvin en °C
-  
-  return Temp;
-}
+DHTesp dht;
 
 DynamicJsonDocument CheckPropertiesState()
 {
@@ -61,10 +48,12 @@ void setup()
   Serial.begin(115200);
 
   IoTDevice_ConnectFromConfiguration();
-  randomSeed(analogRead(0));
 
   // Wait for device connection
   while(!IoTDevice_IsConnected()) { }
+
+  // début de la mesure
+  dht.setup(15, DHTesp::DHT11);
 }
 
 void loop()
@@ -72,19 +61,22 @@ void loop()
   DynamicJsonDocument propertiesState = CheckPropertiesState();
   int waitTime = propertiesState["telemetry"]["frequency"] | DEFAULT_TELEMETRY_FREQUENCY;
 
-  double temp = Thermistor();
+  TempAndHumidity values = dht.getTempAndHumidity();
 
   DynamicJsonDocument doc(1024);
 
-  doc["sensor"] = "temp";
-  doc["unit"]   = "C";
-  doc["value"] = temp;
+  doc["sensor"] = "dht";
+  doc["data"]["status"] = dht.getStatusString();
+  doc["data"]["temp"]["unit"]  = "C";
+  doc["data"]["temp"]["value"]  = String(values.temperature);
+  doc["data"]["humidity"]["unit"]  = "%";
+  doc["data"]["humidity"]["value"]  = String(values.humidity);
 
   String output;
 
   serializeJson(doc, output);
   IoTDevice_Send(output.c_str());
   
-  Log_Info("Waiting for next value: %ds", waitTime);
+  Log_Info("Waiting for next value: %dms", waitTime);
   delay(waitTime);
 }
