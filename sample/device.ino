@@ -66,6 +66,7 @@ void loop()
   DynamicJsonDocument doc(1024);
 
   doc["sensor"] = "dht";
+  doc["timestamp"] = time(NULL);
   doc["data"]["status"] = dht.getStatusString();
   doc["data"]["temp"]["unit"]  = "C";
   doc["data"]["temp"]["value"]  = String(values.temperature);
