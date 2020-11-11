@@ -92,7 +92,7 @@
 //   writerFile.println("[core]");
 //   writerFile.println("ssid = Bbox-62FFD20C");         
 //   writerFile.println("password = WZMxHnSG33zyd3uMhH");     
-//   writerFile.println("connectionString = HostName=dm-explore-iothub-weu.azure-devices.net;DeviceId=esp32_000001;SharedAccessKey=6ndjQZIXxi0d5E8rK9sU5RIi8FK5UMi7vtAKp8YTYZY=");      
+//   writerFile.println("connectionString = HostName=cgigeiotplatformdemohub.azure-devices.net;DeviceId=esp32_0001;SharedAccessKey=S4GhioEjZgxW0cXVS0+e9MUTRnLte42J66XCx3IxapA=");      
 //   writerFile.println("caPath = " + String(certFileName));       
 
 //   writerFile.println("[ntp]");

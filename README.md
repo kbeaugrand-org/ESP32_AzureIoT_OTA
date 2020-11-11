@@ -13,11 +13,8 @@ The Arduino IDE may be installed from: [https://www.arduino.cc/en/main/software#
 
 At time this document is written you may have to install:
 
-* VS Code 1.48.2
-    > This is needed because a bug with Serial Monitor
-    > [https://github.com/microsoft/vscode-arduino/issues/1098](https://github.com/microsoft/vscode-arduino/issues/1098)
-
-* Arduino Extension 0.30
+* VS Code 1.51.0
+* Arduino Extension 0.3.3
     > This may be installed with VS Code command
     > ```ext install vscode-arduino```
 
@@ -29,7 +26,7 @@ At time this document is written you may have to install:
 
     * Enter `https://dl.espressif.com/dl/package_esp32_index.json` into Additional Board Manager URLs field. You can add multiple URLs, separating them with commas.
 
-    * Open Boards Manager from Tools > Board menu and install esp32 platform 1.0.2 or later
+    * Open Boards Manager from Tools > Board menu and install esp32 platform 1.0.4 or later
 
     * Select your ESP32 board from Tools > Board menu after installation
 

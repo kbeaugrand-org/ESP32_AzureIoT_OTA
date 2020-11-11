@@ -1,6 +1,6 @@
 {
     "files.exclude": {
-        ".build": true,
+        ".build": false,
         ".iotworkbenchproject": true
     },
     "files.associations": {
@@ -13,5 +13,6 @@
         "string": "cpp",
         "vector": "cpp",
         "unordered_map": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
