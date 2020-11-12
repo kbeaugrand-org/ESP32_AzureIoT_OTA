@@ -16,7 +16,11 @@ At time this document is written you may have to install:
 * VS Code 1.51.0
 * Arduino Extension 0.3.3
     > This may be installed with VS Code command
-    > ```ext install vscode-arduino```
+
+    ```bash
+    ext install vscode-arduino
+    ```
+
 
 ### ESP 32 & Hardware Adaptation
 
@@ -42,8 +46,35 @@ At time this document is written you may have to install:
 
 1. Download and build the Azure IoT SDK on your Arduino libraries
     * Clone the Azure IoT SDK from github : [https://github.com/Azure/azure-iot-pal-arduino](https://github.com/Azure/azure-iot-pal-arduino)
-        > ```git clone --recursive https://github.com/Azure/azure-iot-pal-arduino```
+
+        ```bash
+        git clone --recursive https://github.com/Azure/azure-iot-pal-arduino
+        ```
+
     * Build the SDK to your Arduino Libraries
-        > python3 make_sdk.py -o `C:\Users\<your username>\Documents\Arduino\libraries\` on Windows
+
+        ```bash
+        python3 make_sdk.py -o `C:\Users\<your username>\Documents\Arduino\libraries\` on Windows
+        ```
 
 ## Getting Started
+
+### Create an IoT hub
+
+[!INCLUDE [iot-hub-include-create-hub](https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/includes/iot-hub-include-create-hub.md)]
+
+### Register a new device in the IoT hub
+
+[!INCLUDE [iot-hub-include-create-device](https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/includes/iot-hub-include-create-device.md)]
+
+### Get the IoT hub connection string
+
+[!INCLUDE [iot-hub-howto-twin-shared-access-policy-text](https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/includes/iot-hub-howto-twin-shared-access-policy-text.md)]
+
+[!INCLUDE [iot-hub-include-find-custom-connection-string](https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/includes/iot-hub-include-find-custom-connection-string.md)]
+
+### Clone this project repository
+
+```bash
+git clone git@github.com:kbeaugrand/ESP32_AzureIoT_OTA.git
+```
