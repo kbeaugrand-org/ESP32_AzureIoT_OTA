@@ -8,7 +8,7 @@
 
 #define DEFAULT_TELEMETRY_FREQUENCY 5000
 
-#define FIRMWARE_VERSION "0.0.2"
+#define FIRMWARE_VERSION "0.0.1"
 
 DHTesp dht;
 
