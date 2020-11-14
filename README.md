@@ -73,13 +73,12 @@ This section describes how to create an IoT hub using the [Azure portal](https:/
 
    * **Subscription**: Select the subscription to use for your hub.
 
-   * **Resource Group**: Select a resource group or create a new one. To create a new one, select **Create new** and fill in the name you want to use. To use an existing resource group, select that resource group. For more information, see [Manage Azure Resource Manager resource groups](../articles/azure-resource-manager/management/manage-resource-groups-portal.md).
+   * **Resource Group**: Select a resource group or create a new one. To create a new one, select **Create new** and fill in the name you want to use. To use an existing resource group, select that resource group.
 
-   * **Region**: Select the region in which you want your hub to be located. Select the location closest to you. Some features, such as [IoT Hub device streams](../articles/iot-hub/iot-hub-device-streams-overview.md), are only available in specific regions. For these limited features, you must select one of the supported regions.
+   * **Region**: Select the region in which you want your hub to be located.
 
    * **IoT Hub Name**: Enter a name for your hub. This name must be globally unique. If the name you enter is available, a green check mark appears.
 
-> [!IMPORTANT]
 > Because the IoT hub will be publicly discoverable as a DNS endpoint, be sure to avoid entering any sensitive or personally identifiable information when you name it.
 
    ![Create a hub in the Azure portal](https://github.com/MicrosoftDocs/azure-docs/blob/master/includes/media/iot-hub-include-create-hub/iot-hub-create-screen-basics.png?raw=true)
@@ -95,17 +94,11 @@ This section describes how to create an IoT hub using the [Azure portal](https:/
       If you are working through a Quickstart for IoT Hub device streams, select the free tier.
 
     * **IoT Hub units**: The number of messages allowed per unit per day depends on your hub's pricing tier. For example, if you want the hub to support ingress of 700,000 messages, you choose two S1 tier units.
-    For details about the other tier options, see [Choosing the right IoT Hub tier](../articles/iot-hub/iot-hub-scaling.md).
+    For details about the other tier options, see [Choosing the right IoT Hub tier](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-scaling).
 
     * **Azure Security Center**: Turn this on to add an extra layer of threat protection to IoT and your devices. This option is not available for hubs in the free tier. For more information about this feature, see [Azure Security Center for IoT](https://docs.microsoft.com/azure/asc-for-iot/).
 
     * **Advanced Settings** > **Device-to-cloud partitions**: This property relates the device-to-cloud messages to the number of simultaneous readers of the messages. Most hubs need only four partitions.
-
-1. Select **Next: Tags** to continue to the next screen.
-
-    Tags are name/value pairs. You can assign the same tag to multiple resources and resource groups to categorize resources and consolidate billing. For more information, see [Use tags to organize your Azure resources](../articles/azure-resource-manager/management/tag-resources.md).
-
-    ![Assign tags for the hub using the Azure portal](https://github.com/MicrosoftDocs/azure-docs/blob/master/includes/media/iot-hub-include-create-hub/iot-hub-create-tabs.png?raw=true)
 
 1. Select **Next: Review + create** to review your choices. You see something similar to this screen, but with the values you selected when creating the hub.
 
@@ -115,7 +108,7 @@ This section describes how to create an IoT hub using the [Azure portal](https:/
 
 ### Register a new device in the IoT hub
 
-In this section, you create a device identity in the identity registry in your IoT hub. A device cannot connect to a hub unless it has an entry in the identity registry. For more information, see the [IoT Hub developer guide](../articles/iot-hub/iot-hub-devguide-identity-registry.md#identity-registry-operations).
+In this section, you create a device identity in the identity registry in your IoT hub. A device cannot connect to a hub unless it has an entry in the identity registry. For more information, see the [IoT Hub developer guide](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry#identity-registry-operations).
 
 1. In your IoT hub navigation menu, open **IoT Devices**, then select **New** to add a device in your IoT hub.
 
@@ -133,7 +126,7 @@ In this section, you create a device identity in the identity registry in your I
     ![Device connection string](https://github.com/MicrosoftDocs/azure-docs/blob/master/includes/media/iot-hub-include-create-device/device-details-vs2019.png?raw=true)
 
 > [!NOTE]
-> The IoT Hub identity registry only stores device identities to enable secure access to the IoT hub. It stores device IDs and keys to use as security credentials, and an enabled/disabled flag that you can use to disable access for an individual device. If your application needs to store other device-specific metadata, it should use an application-specific store. For more information, see [IoT Hub developer guide](../articles/iot-hub/iot-hub-devguide-identity-registry.md).
+> The IoT Hub identity registry only stores device identities to enable secure access to the IoT hub. It stores device IDs and keys to use as security credentials, and an enabled/disabled flag that you can use to disable access for an individual device. If your application needs to store other device-specific metadata, it should use an application-specific store. For more information, see [IoT Hub developer guide](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry).
 
 ### Sets the IoT device Twin desired properties
 
@@ -217,7 +210,7 @@ In this section, you create a cloud storage account and upload you device firmwa
 
 Every storage account must belong to an Azure resource group. A resourcegroup is a logical container for grouping your Azure services. When you create a storage account, you have the option to either create a new resource group, or use an existing resource group. This article shows howto create a new resource group.
 
-A **general-purpose v2** storage account provides access to all of theAzure Storage services: blobs, files, queues, tables, and disks. The steps outlined here create a general-purpose v2 storage account, but the steps to create any type of storage account are similar. For more information about types of storage accounts and other storage account settings, see [Azure storage account overview](storage-account-overview.md).
+A **general-purpose v2** storage account provides access to all of theAzure Storage services: blobs, files, queues, tables, and disks. The steps outlined here create a general-purpose v2 storage account, but the steps to create any type of storage account are similar. For more information about types of storage accounts and other storage account settings, see [Azure storage account overview](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview).
 To create a general-purpose v2 storage account in the Azure portal, follow these steps:
 
 1. On the Azure portal menu, select **All services**. In the list of resources, type **Storage Accounts**. As you begin typing, the list filters based on your input. Select **Storage Accounts**.
