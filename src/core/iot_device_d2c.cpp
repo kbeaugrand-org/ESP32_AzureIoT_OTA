@@ -1,6 +1,3 @@
-#ifndef IOT_DEVICE_D2C_H
-#define IOT_DEVICE_D2C_H
-
 #include "logging.h"
 
 #include "iot_device_d2c.h"
@@ -34,5 +31,3 @@ bool IoTDevice_Send(const char *message)
   IoTHubDeviceClient_LL_DoWork(__hub_client_handle__);       
   ThreadAPI_Sleep(3);
 }
-
-#endif

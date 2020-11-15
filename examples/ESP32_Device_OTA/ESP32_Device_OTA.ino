@@ -8,9 +8,11 @@
 
 #define DEFAULT_TELEMETRY_FREQUENCY 5000
 
-#define FIRMWARE_VERSION "0.0.1"
+#define FIRMWARE_VERSION "0.0.2"
 
 DHTesp dht;
+
+bool rebootRequired;
 
 DynamicJsonDocument CheckPropertiesState()
 {
@@ -43,6 +45,18 @@ DynamicJsonDocument CheckPropertiesState()
   return propertiesState;
 }
 
+int OnRebootInvoked(const unsigned char* payload, size_t size, unsigned char** response, size_t* response_size)
+{
+  const char deviceMethodResponse[] = "{ \"acknowledged\": \"true\" }";
+  *response_size = sizeof(deviceMethodResponse)-1;
+  *response = (unsigned char *)malloc(*response_size);
+  (void)memcpy(*response, deviceMethodResponse, *response_size);
+
+  rebootRequired = true;
+
+  return 200;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -52,12 +66,18 @@ void setup()
   // Wait for device connection
   while(!IoTDevice_IsConnected()) { }
 
+  IoTDevice_RegisterForMethodInvoke("reboot", OnRebootInvoked);
+
   // début de la mesure
   dht.setup(15, DHTesp::DHT11);
 }
 
 void loop()
 { 
+  if (rebootRequired) {
+    ESP.restart();
+  }
+
   DynamicJsonDocument propertiesState = CheckPropertiesState();
   int waitTime = propertiesState["telemetry"]["frequency"] | DEFAULT_TELEMETRY_FREQUENCY;
 

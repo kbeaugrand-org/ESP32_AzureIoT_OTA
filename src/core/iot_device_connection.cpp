@@ -187,6 +187,8 @@ static void IoTDevice_ConfigureOptions()
 
   // Setting device twin callback
   (void)IoTHubDeviceClient_LL_SetDeviceTwinCallback(__hub_client_handle__, IoTDevice_DeviceTwinCallback, NULL);
+
+  IoTDevice_RegisterDeviceMethodCallback();
 }
 
 static void IoTDevice_ConnectToHub(const char *connectionString)
